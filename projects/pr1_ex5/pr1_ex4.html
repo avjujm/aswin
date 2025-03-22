@@ -1,0 +1,291 @@
+
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Robot arms</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+</body>
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.172.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/"
+    }
+  }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+    function main() {
+        const canvas = document.querySelector('#c');
+        const renderer = new THREE.WebGLRenderer({ canvas });
+
+        const fov = 40;
+        const aspect = 2;  // the canvas default
+        const near = 0.1;
+        const far = 100;
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.set(0, 50, 20);
+        camera.up.set(0, 0, 1);
+        camera.lookAt(0, 0, 0);
+
+        const scene = new THREE.Scene();
+
+
+        {
+            const color = 0xFFFFFF;
+            const intensity = 900;
+            const light = new THREE.PointLight(color, intensity);
+            light.position.z=15;
+            light.position.y=20;
+            // const pointLightHelper= new THREE.PointLightHelper(light,1);
+            // scene.add(pointLightHelper);
+            scene.add(light);
+        }
+const loader= new THREE.TextureLoader();
+const texture =loader.load("robo_arm_texture_enhanced.png");
+
+        const objects = [];
+
+        const radius = 1.7;
+        const widthSegments = 100;
+        const heightSegments = 100;
+        const sphereGeometry = new THREE.SphereGeometry(
+            radius, widthSegments, heightSegments);
+
+
+            const TextureMaterial = new THREE.MeshStandardMaterial({map: texture});
+            const Material= new THREE.MeshStandardMaterial({color:0x4e514f});
+
+
+        const cylinderGeometry= new THREE.CylinderGeometry(2, 2 , 4, 100, 100);
+        const boxGeometry = new THREE.BoxGeometry(0.5, 2, 1);
+
+
+        const Base = new THREE.Object3D();
+        scene.add(Base);
+        objects.push(Base);
+        Base.position.z = 8;
+
+        // const Material = new THREE.MeshNormalMaterial();
+        
+        const pyramidGeometry = new THREE.ConeGeometry(8, 5, 3);
+        const bodypyramid = new THREE.Mesh(pyramidGeometry, Material);
+        bodypyramid.rotation.y = Math.PI; 
+        // bodypyramid.position.y = -5; 
+        Base.add(bodypyramid);
+        objects.push(bodypyramid);
+
+        const sphere1Mesh = new THREE.Mesh(sphereGeometry, Material);
+        // sphere1Mesh.scale.set(5, 5, 5);
+        sphere1Mesh.position.set(-7, -1.5, -3);
+        sphere1Mesh.rotation.set(2,0,2);
+        bodypyramid.add(sphere1Mesh);
+        objects.push(sphere1Mesh);
+
+        const cylinder2Mesh= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder2Mesh.position.set(0, 2.5, 0);
+        sphere1Mesh.add(cylinder2Mesh);
+        objects.push(cylinder2Mesh);
+
+        const sphere2Mesh = new THREE.Mesh(sphereGeometry, Material);
+        sphere2Mesh.position.set(0, 2.5, 0);
+        sphere2Mesh.rotation.set(-1,0,-1);
+        cylinder2Mesh.add(sphere2Mesh);
+        objects.push(sphere2Mesh);
+
+        const cylinder3Mesh= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder3Mesh.position.set(0, 2.5, 0);
+        sphere2Mesh.add(cylinder3Mesh);
+        objects.push(cylinder3Mesh);
+
+        const sphere3Mesh = new THREE.Mesh(sphereGeometry, Material);
+        sphere3Mesh.position.set(0, 2.5, 0);
+        sphere3Mesh.rotation.set(-1,-1,0.5);
+        cylinder3Mesh.add(sphere3Mesh);
+        objects.push(sphere3Mesh);
+
+        const cylinder4Mesh= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder4Mesh.position.set(0, 2.5, 0);
+        sphere3Mesh.add(cylinder4Mesh);
+        objects.push(cylinder4Mesh);
+
+        const sphere4Mesh = new THREE.Mesh(sphereGeometry, Material);
+        sphere4Mesh.position.set(0, 2.5, 0);
+        cylinder4Mesh.add(sphere4Mesh);
+        objects.push(sphere4Mesh);
+
+        const leftfinger1Mesh = new THREE.Mesh(boxGeometry, Material);
+        leftfinger1Mesh.position.set(-0.5, 2, 0);
+        sphere4Mesh.add(leftfinger1Mesh);
+        objects.push(leftfinger1Mesh);
+
+        const leftfinger2Mesh = new THREE.Mesh(boxGeometry, TextureMaterial);
+        leftfinger2Mesh.position.set(0.5, 2, 0);
+        sphere4Mesh.add(leftfinger2Mesh);
+        objects.push(leftfinger2Mesh);
+
+
+//Right side
+const sphere1MeshR = new THREE.Mesh(sphereGeometry, Material);
+        // sphere1Mesh.scale.set(5, 5, 5);
+        sphere1MeshR.position.set(7, -1.5, -3);
+        sphere1MeshR.rotation.set(2,0,-2);
+        bodypyramid.add(sphere1MeshR);
+        objects.push(sphere1MeshR);
+
+        const cylinder2MeshR= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder2MeshR.position.set(0, 2.5, 0);
+        sphere1MeshR.add(cylinder2MeshR);
+        objects.push(cylinder2MeshR);
+
+        const sphere2MeshR = new THREE.Mesh(sphereGeometry, Material);
+        sphere2MeshR.position.set(0, 2.5, 0);
+        sphere2MeshR.rotation.set(-1,0,1);
+        cylinder2MeshR.add(sphere2MeshR);
+        objects.push(sphere2MeshR);
+
+        const cylinder3MeshR= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder3MeshR.position.set(0, 2.5, 0);
+        sphere2MeshR.add(cylinder3MeshR);
+        objects.push(cylinder3MeshR);
+
+        const sphere3MeshR = new THREE.Mesh(sphereGeometry, Material);
+        sphere3MeshR.position.set(0, 2.5, 0);
+        sphere3MeshR.rotation.set(-1,1,-0.5);
+        cylinder3MeshR.add(sphere3MeshR);
+        objects.push(sphere3MeshR);
+
+        const cylinder4MeshR= new THREE.Mesh(cylinderGeometry, TextureMaterial);
+        cylinder4MeshR.position.set(0, 2.5, 0);
+        sphere3MeshR.add(cylinder4MeshR);
+        objects.push(cylinder4MeshR);
+
+        const sphere4MeshR = new THREE.Mesh(sphereGeometry, Material);
+        sphere4MeshR.position.set(0, 2.5, 0);
+        cylinder4MeshR.add(sphere4MeshR);
+        objects.push(sphere4MeshR);
+
+        const leftfinger1MeshR = new THREE.Mesh(boxGeometry, Material);
+        leftfinger1MeshR.position.set(-0.5, 2, 0);
+        sphere4MeshR.add(leftfinger1MeshR);
+        objects.push(leftfinger1MeshR);
+
+        const leftfinger2MeshR = new THREE.Mesh(boxGeometry, TextureMaterial);
+        leftfinger2MeshR.position.set(0.5, 2, 0);
+        sphere4MeshR.add(leftfinger2MeshR);
+        objects.push(leftfinger2MeshR);
+
+
+
+
+///////////////////////////////////////////////
+function getOpacity(y, x) {
+  const distance = Math.sqrt(y * y + x * x);
+  const opacity = Math.max(0, Math.min(1, 1 - distance / 15));
+  return opacity;
+}
+function cross(y, x) {
+  for (let i = -y; i <= y; i += 1) {
+    for (let k = -x; k <= x; k += 1) {
+      var material = new THREE.LineBasicMaterial({
+        transparent: true,
+        opacity: getOpacity(i, k),
+        color: 0x39FF14
+      });
+
+      var points = [];
+      // making + marks
+      points.push(new THREE.Vector3(k,i - 0.1,0)); // left point
+      points.push(new THREE.Vector3( k,i + 0.1, 0)); // right point
+
+      points.push(new THREE.Vector3( k-0.1,i,0)); // front point
+      points.push(new THREE.Vector3( k+0.1,i, 0)); // back point
+
+      var geometry = new THREE.BufferGeometry().setFromPoints(points);
+      var line = new THREE.LineSegments(geometry, material);
+      scene.add(line);}}}
+
+    cross(15,15)
+
+const orbitControls = new OrbitControls( camera, renderer.domElement );
+
+function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+        function render(time) {
+          time *= 0.001;
+
+// Base.rotation.z = Math.sin(time) * 0.2;
+// sphere1Mesh.rotation.z=Math.sin(time)*0.5;
+// sphere1Mesh.rotation.x=Math.sin(time)*0.5;
+// sphere2Mesh.rotation.z=Math.cos(time)*0.5;
+sphere2Mesh.rotation.y=Math.sin(time)*0.5;
+// sphere3Mesh.rotation.y=Math.sin(time)*0.5;
+sphere3Mesh.rotation.x=Math.sin(time)/2;
+// // sphere4Mesh.rotation.y=Math.sin(time)*0.5;
+leftfinger1Mesh.rotation.z=Math.sin(time)*0.5;
+leftfinger2Mesh.rotation.z=Math.sin(-time)*0.5;
+
+leftfinger1MeshR.rotation.z=Math.sin(time)*0.5;
+leftfinger2MeshR.rotation.z=Math.sin(-time)*0.5;
+// sphere1MeshR.rotation.z=Math.sin(time)*0.5;
+sphere2MeshR.rotation.y=Math.cos(time)*0.5;
+// sphere3MeshR.rotation.y=Math.sin(time)*0.5;
+sphere3MeshR.rotation.x=Math.sin(time)/2;
+// sphere4MeshR.rotation.y=Math.sin(time)*0.5;
+
+
+
+
+            if (resizeRendererToDisplaySize(renderer)) {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+
+
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    }
+
+    main();
+</script>
+
+</html>

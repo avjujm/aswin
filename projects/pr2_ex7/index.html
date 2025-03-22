@@ -82,6 +82,16 @@ import { HTMLMesh } from 'three/addons/interactive/HTMLMesh.js';
             leftwallMaterial.color.set(value);
             rectArealight.color.set(value);
         });
+        gui.add(obj, 'lightIntensity', 0, 100, 0.1)
+        .name('Light Intensity')
+        .onChange(function(value) {
+        pointLight.intensity = value;
+        rectArealight.intensity = value;
+        backRectLight.intensity = value;
+        rightRectLight.intensity = value;
+        topRectLight.intensity = value;
+        bottomRectLight.intensity = value;
+    });
 // gui.add()
 
 
