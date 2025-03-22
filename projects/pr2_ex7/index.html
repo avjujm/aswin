@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>VR room</title>
+    <style>
+      html,
+      body {
+        width: 50%;
+        height: 50%;
+        margin: 0;
+      }
+
+      #c {
+        width: 50%;
+        height: 50%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.172.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/"
+      }
+    }
+  </script>
+
+<script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
+  import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+  import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.17.0/dist/lil-gui.esm.js'; 
+  import { VRButton } from 'three/addons/webxr/VRButton.js';
+  import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+  import { InteractiveGroup } from 'three/addons/interactive/InteractiveGroup.js';
+import { HTMLMesh } from 'three/addons/interactive/HTMLMesh.js';
+
+  // import {DirectionalLighthelper} from 'three/addons/helpers/DirectionalLightHelper.js';
+  // import {PointLightHelper} from 'three/addons/helpers/PointLightHelper.js';
+  // import {SpotLightHelper} from 'three/addons/helpers/SpotLightHelper.js';
+  // import {HemisphereLightHelper} from 'three/addons/helpers/HemisphereLightHelper.js';
+
+
+
+  function main(){
+
+    const gui = new GUI();
+
+    const obj = {
+        color: '#a09d96',
+        lightType:'off',
+        lightColor:'#ffffff',
+        skyColor:'#ffffff',
+        groundColor:'#ffffff',
+        rectArealight: true,
+        ambientLight: true,
+        lightIntensity: 1,
+
+        // roughness: 0.5,
+        // metalness: 0.5,
+        // transparency:0.5,
+        // envMapIntensity:1,
+        // wireframe: false,
+
+
+    };
+
+    gui.addColor(obj, 'color')
+        .name('Wall Color')
+        .onChange(function(value) {
+            stdMaterial.color.set(value);// Update all walls using stdMaterial
+            leftwallMaterial.color.set(value);
+            rectArealight.color.set(value);
+        });
+// gui.add()
+
+
+      var scene = new THREE.Scene();
+      var aspect = window.innerWidth / window.innerHeight;
+      var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+      var renderer = new THREE.WebGLRenderer();
+      console.log(renderer.context);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      renderer.xr.enabled=true;
+      document.body.appendChild(VRButton.createButton(renderer));
+scene.position.z=-10
+
+//Light/////////////////////////////////////////////////////////////////////////////////////
+const Base = new THREE.Object3D();  
+	  Base.position.set(0, 2.5, 0);
+    scene.add(Base);
+// objects.push(Base);
+
+// const lightsFolder=gui.addFolder('Lights');
+
+const color = 0xffffff;
+const intensity = 3;
+
+// const directionalLight= new THREE.DirectionalLight(color, intensity);
+// directionalLight.position.set(1, 5,7.5);
+// Base.add(directionalLight);
+// // const directionalLightHelper = new DirectionalLighthelper(directionalLight,1);
+// // Base.add(directionalLightHelper);
+
+const pointLight = new THREE.PointLight(color, intensity);
+const pointLightHelper = new THREE.PointLightHelper(pointLight);
+pointLight.position.set(1,1.5,7);
+Base.add(pointLight);
+Base.add(pointLightHelper);
+// const pointLightHelper = new PointLightHelper(pointLight);
+// Base.add(pointLightHelper);
+
+// const spotLight= new THREE.SpotLight(color, intensity);
+// spotLight.position.set(1, 5,7.5);
+// Base.add(spotLight);
+// // const spotLightHelper = new SpotLightHelper(spotLight);
+// // Base.add(spotLightHelper);
+
+// const hemisphereLight= new THREE.HemisphereLight(color,0xffffff, intensity);
+// hemisphereLight.position.set(1, 5,7.5);
+// Base.add(hemisphereLight);
+// // const hemisphereLightHelper = new HemisphereLightHelper(hemisphereLight);
+// // Base.add(hemisphereLightHelper);
+
+
+// lightsFolder.add(obj,'lightType',['off','directional','point','spot','hemisphere']).name('Light Type').onChange(function(value) {
+//         directionalLight.visible = false;//all lights off 1st
+//         pointLight.visible = false;
+//         spotLight.visible = false;
+//         hemisphereLight.visible = false;
+
+    //     // Turn on only the selected light
+    //     if(value === 'directional') directionalLight.visible = true;
+    //     if(value === 'point') pointLight.visible = true;
+    //     if(value === 'spot') spotLight.visible = true;
+    //     if(value === 'hemisphere') hemisphereLight.visible = true;
+    // });
+// lightsFolder.addColor(obj,'lightColor').name('Light Color').onChange(function(value) {
+//     directionalLight.color.set(value);
+//     pointLight.color.set(value);
+//     spotLight.color.set(value);
+//     // hemisphereLight.color.set(value);
+//     });
+// lightsFolder.addColor(obj,'skyColor').name('Sky Color').onChange(function(value){
+//   hemisphereLight.color.set(value);
+// });
+// lightsFolder.addColor(obj,'groundColor').name('Ground Color').onChange(function(value){
+//   hemisphereLight.groundColor.set(value);
+// });
+
+// lightsFolder.add(obj,'lightIntensity',0,10).name('Light Intensity').onChange(function(value) {
+//     directionalLight.intensity=value;
+//     pointLight.intensity=value;
+//     spotLight.intensity=value;
+//     hemisphereLight.intensity=value;
+//     });
+// lightsFolder.close();
+
+
+	const light = new THREE.AmbientLight(color, intensity);
+    scene.add(light);
+		// light.position.set(10, 5, 10 );
+gui.add(obj,'ambientLight').name('Ambient Light').onChange(function(value) {
+    light.visible=value;
+    });
+    
+ 
+//material
+const normalMaterial = new THREE.MeshNormalMaterial();
+const stdMaterial = new THREE.MeshStandardMaterial({
+    color: 0xa09d96,  
+    roughness: 0.9,
+    metalness: 0.1,});
+const glassMaterial=new THREE.MeshStandardMaterial({// for right wall (like windows)
+    color: 0xffffff,
+    roughness: 0.1,
+    metalness: 0.9,
+    transparent: true,
+    opacity: 0.5,
+    side: THREE.DoubleSide
+});
+
+//ROOM////////////////////////////////////////////////////////////////////////////
+
+  const backWallGeometry = new THREE.PlaneGeometry(15, 10, 100, 100);
+  const backWallMaterial = new THREE.MeshLambertMaterial({
+    color: 0xa09d96, //to change the color with the colorpicker 
+    // roughness: 0.9,
+    // metalness: 0.1,
+    });
+	const backWall = new THREE.Mesh(backWallGeometry, backWallMaterial);
+    backWall.material.side = THREE.DoubleSide;
+    Base.add(backWall);
+
+	const leftWallGeometry = new THREE.PlaneGeometry(15, 10, 100, 100);
+    const leftwallMaterial = new THREE.MeshLambertMaterial({
+    color: obj.color, //to change the color with the colorpicker 
+    // roughness: 0.9,
+    // metalness: 0.1,
+    });
+  const leftWall = new THREE.Mesh(leftWallGeometry, leftwallMaterial);
+	leftWall.material.side = THREE.DoubleSide;
+	leftWall.position.set(-7.5, 0,7.5 );
+	leftWall.rotation.y=-Math.PI/2;
+	Base.add(leftWall);
+
+const rightWallGeometry = new THREE.PlaneGeometry(15, 10, 100, 100);
+const rightwallmaterial= new THREE.MeshLambertMaterial({color:0xa09d96});   
+  const rightWall = new THREE.Mesh(rightWallGeometry, rightwallmaterial);
+	rightWall.material.side = THREE.DoubleSide;
+	rightWall.position.set(7.5, 0,7.5 );
+	rightWall.rotation.y=-Math.PI/2;
+	Base.add(rightWall);
+  // rightWall.add(light);//add the light to the right wall (for sunlight effect as in the practical room)
+
+	const bottomWallGeometry = new THREE.PlaneGeometry(15, 15, 100, 100);
+	const bottomWallMaterial = new THREE.MeshLambertMaterial({
+    color: 0x4e4a47,  
+    emissive: 0x000000,
+    opacity: 1.0,
+    transparent: false
+});
+	const bottomWall = new THREE.Mesh(bottomWallGeometry, bottomWallMaterial);
+	bottomWall.material.side = THREE.DoubleSide;
+	bottomWall.position.set(0, -5,7.5 );
+	bottomWall.rotation.x=-Math.PI/2;
+	bottomWall.rotation.z=Math.PI/2;
+	Base.add(bottomWall);
+
+	const topWallGeometry = new THREE.PlaneGeometry(15, 15, 100, 100);
+	const topWall = new THREE.Mesh(topWallGeometry, backWallMaterial);
+	topWall.material.side = THREE.DoubleSide;
+	topWall.position.set(0, 5,7.5 );
+	topWall.rotation.x=-Math.PI/2; 
+	topWall.rotation.z=Math.PI/2;
+	Base.add(topWall);
+
+//left wall
+const rectArealight = new THREE.RectAreaLight(leftwallMaterial.color, 3, 15, 10);
+RectAreaLightUniformsLib.init();
+// const rectArealightHelper = new RectAreaLightHelper(rectArealight);
+leftWall.add(rectArealight);
+// leftWall.add(rectArealightHelper);
+
+// Back wall
+const backRectLight = new THREE.RectAreaLight(backWallMaterial.color, 3, 15, 10);
+// const backRectLightHelper = new RectAreaLightHelper(backRectLight);
+backWall.add(backRectLight);
+// backWall.add(backRectLightHelper);
+
+// Right wall 
+const rightRectLight = new THREE.RectAreaLight(rightwallmaterial.color, 3, 15, 10); // Lower intensity for glass
+// const rightRectLightHelper = new RectAreaLightHelper(rightRectLight);
+rightWall.add(rightRectLight);
+// rightWall.add(rightRectLightHelper);
+
+// Top wall
+const topRectLight = new THREE.RectAreaLight(backWallMaterial.color, 3, 15, 15);
+// const topRectLightHelper = new RectAreaLightHelper(topRectLight);
+topWall.add(topRectLight);
+// topWall.add(topRectLightHelper);
+
+// Bottom wall
+const bottomRectLight = new THREE.RectAreaLight(bottomWallMaterial.color, 3, 15, 15);
+// const bottomRectLightHelper = new RectAreaLightHelper(bottomRectLight);
+bottomWall.add(bottomRectLight);
+// bottomWall.add(bottomRectLightHelper);
+//Table///////////////////////////////////////////////////////////////////
+const tableMaterial= new THREE.MeshStandardMaterial({color:0xd7cfc5});
+function makeTable(x,y,z,rotx,roty,rotz){
+const palakaGeometry=new THREE.BoxGeometry(0.1,4);
+const palaka=new THREE.Mesh(palakaGeometry,tableMaterial);
+palaka.material.side=THREE.DoubleSide;
+palaka.position.set(x,y,z);
+// palaka.rotation.y=Math.PI/2;
+palaka.rotation.x=rotx;
+palaka.rotation.z=-rotz;
+palaka.rotation.y=roty;
+bottomWall.add(palaka);
+
+const benchlegGeometry=new THREE.BoxGeometry(2,0.1,0.1);
+// const benchleg1=new THREE.Mesh(benchlegGeometry,stdMaterial);
+// benchleg1.position.set(1,1.9,0.5);
+// palaka.add(benchleg1);
+
+const legPositions=[
+        { x: 1, y: -1.9, z: 0.5 },
+        { x: 1, y: 1.9, z: 0.5 },
+        { x: 1, y: -1.9, z: -0.5 },
+        { x: 1, y: 1.9, z: -0.5 }
+]
+
+legPositions.forEach(pos => {
+        const benchleg = new THREE.Mesh(benchlegGeometry, tableMaterial);
+        benchleg.position.set(pos.x, pos.y, pos.z);
+        palaka.add(benchleg);
+    });
+
+    return palaka;
+}
+
+
+const tablePositions = [
+{ x: 3,y:0 ,z: 2, rotx: Math.PI/2, roty: Math.PI/2, rotz: Math.PI/2 },
+    { x: 1.5,y:2.5 , z: 2, rotx: Math.PI/2, roty: 0, rotz: Math.PI/2 },
+    { x: -1.5,y:-2.5 , z: 2, rotx: Math.PI/2,roty: 0, rotz: Math.PI/2 },
+    { x: 1.5,y:-2.5 , z: 2, rotx: Math.PI/2,roty: 0, rotz: Math.PI/2 },
+    { x: -1.5,y:2.5 , z: 2, rotx: Math.PI/2,roty: 0, rotz: Math.PI/2 },
+];
+
+tablePositions.forEach(pos => {
+    makeTable(pos.x, pos.y, pos.z, pos.rotx,pos.roty,pos.rotz);
+});
+
+//objects////////////////////////////////////////////////////////////////////////////////////
+const textureLoader = new THREE.TextureLoader();
+const woodTexture=textureLoader.load('wood_texture.jpg');
+			
+function guiMaterial( gui) {
+const materialFolder = gui.addFolder( 'THREE.Material' );
+const materialProps = {
+        transparent: false,
+        opacity: 1,
+        depthTest: true,
+        depthWrite: true,
+        alphaTest: 0,
+        visible: true
+    };
+
+materialFolder.add(materialProps, 'transparent').onChange(value => {
+        lambertMaterial.transparent = value;
+        phongMaterial.transparent = value;
+        physicalMaterial.transparent = value;
+    });
+
+    materialFolder.add(materialProps, 'opacity', 0, 1).step(0.01).onChange(value => {
+        lambertMaterial.opacity = value;
+        phongMaterial.opacity = value;
+        physicalMaterial.opacity = value;
+    });
+
+    materialFolder.add(materialProps, 'depthTest').onChange(value => {
+        lambertMaterial.depthTest = value;
+        phongMaterial.depthTest = value;
+        physicalMaterial.depthTest = value;
+    });
+
+    materialFolder.add(materialProps, 'depthWrite').onChange(value => {
+        lambertMaterial.depthWrite = value;
+        phongMaterial.depthWrite = value;
+        physicalMaterial.depthWrite = value;
+    });
+
+    materialFolder.add(materialProps, 'alphaTest', 0, 1).step(0.01).onChange(value => {
+        lambertMaterial.alphaTest = value;
+        phongMaterial.alphaTest = value;
+        physicalMaterial.alphaTest = value;
+    });
+
+    materialFolder.add(materialProps, 'visible').onChange(value => {
+        lambertMaterial.visible = value;
+        phongMaterial.visible = value;
+        physicalMaterial.visible = value;
+    });
+}
+
+
+
+function guiMeshLambertMaterial( gui, mesh, material, geometry ) {
+
+				const data = {
+					color: material.color.getHex(),
+					emissive: material.emissive.getHex(),
+                    map:'none',
+					// envMaps: envMapKeys[ 0 ],
+					// useTexture: false,
+					// alphaMap: alphaMapKeys[ 0 ]
+
+
+				};
+
+				const folder = gui.addFolder( 'THREE.MeshLambertMaterial' );
+
+				folder.addColor( data, 'color' ).onChange( function (value){
+                     material.color.setHex(value)});
+				folder.addColor( data, 'emissive' ).onChange( function(value){
+                     material.emissive.setHex(value)});
+				folder.add( material, 'wireframe' );
+				folder.add( material, 'vertexColors' );
+				// folder.add( material, 'fog' ).onChange( needsUpdate( material, geometry ) );
+				// folder.add( data, 'envMaps', envMapKeys ).onChange( updateTexture( material, 'envMap', envMaps ) );  
+    folder.add(data,'map',['none','wood']).name('Texture (map)').onChange(function (value){
+        if(value==='wood'){
+            material.map=woodTexture;
+        }
+        else{
+            material.map=null;
+        }
+    material.needsUpdate = true;
+});
+				// folder.add( data, 'alphaMap', alphaMapKeys ).onChange( updateTexture( material, 'alphaMap', alphaMaps ) );
+				// folder.add( material, 'combine', constants.combine ).onChange( updateCombine( material ) );
+				folder.add( material, 'reflectivity', 0, 1 );
+				folder.add( material, 'refractionRatio', 0, 1 );
+
+			};
+
+    function guiMeshPhongMaterial(gui, mesh, material, geometry) {
+    const data = {
+        color: material.color.getHex(),
+        emissive: material.emissive.getHex(),
+        specular: material.specular.getHex(),
+        map: 'none'
+    };
+
+    const folder = gui.addFolder('THREE.MeshPhongMaterial');
+
+    folder.addColor(data, 'color').onChange(function(value) {
+        material.color.setHex(value);
+    });
+    folder.addColor(data, 'emissive').onChange(function(value) {
+        material.emissive.setHex(value);
+    });
+    folder.addColor(data, 'specular').onChange(function(value) {
+        material.specular.setHex(value);
+    });
+    folder.add(material, 'shininess', 0, 100);
+    folder.add(material, 'wireframe');
+    folder.add(material, 'vertexColors');
+    folder.add(data, 'map', ['none', 'wood']).name('Texture (map)').onChange(function(value) {
+        if(value === 'wood') {
+            material.map = woodTexture;
+        } else {
+            material.map = null;
+        }
+        material.needsUpdate = true;
+    });
+    folder.add(material, 'reflectivity', 0, 1);
+    folder.add(material, 'refractionRatio', 0, 1);
+}
+
+function guiMeshPhysicalMaterial(gui, mesh, material, geometry) {
+    const data = {
+        color: material.color.getHex(),
+        emissive: material.emissive.getHex(),
+        map: 'none'
+    };
+
+    const folder = gui.addFolder('THREE.MeshPhysicalMaterial');
+
+    folder.addColor(data, 'color').onChange(function(value) {
+        material.color.setHex(value);
+    });
+    folder.addColor(data, 'emissive').onChange(function(value) {
+        material.emissive.setHex(value);
+    });
+    folder.add(material, 'roughness', 0, 1);
+    folder.add(material, 'metalness', 0, 1);
+    folder.add(material, 'clearcoat', 0, 1).step(0.01);
+    folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01);
+    folder.add(material, 'wireframe');
+    folder.add(material, 'vertexColors');
+    folder.add(data, 'map', ['none', 'wood']).name('Texture (map)').onChange(function(value) {
+        if(value === 'wood') {
+            material.map = woodTexture;
+        } else {
+            material.map = null;
+        }
+        material.needsUpdate = true;
+    });
+    folder.add(material, 'reflectivity', 0, 1);
+    folder.add(material, 'ior', 1, 2.333);
+}
+
+
+const objconeGeometry = new THREE.ConeGeometry(0.4, 1, 32);
+const lambertMaterial = new THREE.MeshLambertMaterial( { color: 0x049EF4 } );
+const objcone = new THREE.Mesh(objconeGeometry, lambertMaterial);
+// const lambertMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
+bottomWall.add(objcone);
+objcone.position.set(3, 1.5 , 2.55);
+objcone.rotation.x = Math.PI / 2;
+
+const objcylinderGeometry= new THREE.CylinderGeometry(0.5,0.5,1);
+const phongMaterial = new THREE.MeshPhongMaterial({color: 0x0000ff});
+const objcylinder = new THREE.Mesh(objcylinderGeometry, phongMaterial);
+bottomWall.add(objcylinder);
+objcylinder.position.set(3, -1.5 , 2.55);
+
+
+const objsphereGeometry= new THREE.SphereGeometry(0.5, 32, 32);
+const physicalMaterial= new THREE.MeshPhysicalMaterial({color: 0xff0000});
+const objsphere= new THREE.Mesh(objsphereGeometry, physicalMaterial);
+bottomWall.add(objsphere);
+objsphere.position.set(3, 0 , 2.55);
+
+guiMaterial(gui);
+guiMeshLambertMaterial( gui, objcone, lambertMaterial, objconeGeometry );
+guiMeshPhongMaterial(gui, objcylinder, phongMaterial, objcylinderGeometry);
+guiMeshPhysicalMaterial(gui, objsphere, physicalMaterial, objsphereGeometry);
+
+// Add VR controllers
+const geometry = new THREE.BufferGeometry();
+    geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -5)]);
+
+    const controller1 = renderer.xr.getController(0);
+    controller1.add(new THREE.Line(geometry));
+    scene.add(controller1);
+
+    const controller2 = renderer.xr.getController(1);
+    controller2.add(new THREE.Line(geometry));
+    scene.add(controller2);
+// Add controller models
+const controllerModelFactory = new XRControllerModelFactory();
+
+const controllerGrip1 = renderer.xr.getControllerGrip(0);
+controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+scene.add(controllerGrip1);
+
+const controllerGrip2 = renderer.xr.getControllerGrip(1);
+controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+scene.add(controllerGrip2);
+
+//gui in VR
+const group =new InteractiveGroup();
+group.listenToPointerEvents(renderer,camera);
+group.listenToXRControllerEvents(controller1);
+group.listenToXRControllerEvents(controller2);
+Base.add(group);
+
+//gui as html mesh in vr
+const guiMesh=new HTMLMesh(gui.domElement);
+guiMesh.position.set(-4,0,5);
+guiMesh.rotation.y = Math.PI / 4;
+guiMesh.scale.setScalar(5);
+group.add(guiMesh);
+
+controller1.position.set(-4,0,10); 
+controller2.position.set(4,0,10);
+controllerGrip1.position.set(-4,0,10);
+controllerGrip2.position.set(4,0,10);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+const controls = new OrbitControls(camera, renderer.domElement);
+       
+function render () {
+        //  requestAnimationFrame(render);   
+         controls.update();     
+         renderer.render(scene, camera);
+         renderer.setAnimationLoop(render);
+         guiMesh.material.map.update();
+       };
+
+render();
+
+
+
+
+camera.position.set(0,1.5	, 20);
+camera.lookAt(0, 0, 0);
+
+}  
+
+main();
+    </script>
+  </body>
+</html>
